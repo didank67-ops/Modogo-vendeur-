@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Modogo - Gestionnaire de Ventes Terrain</title>
+    <!-- Ingestion de la bibliothèque QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary: #0052cc;
+            --secondary: #ffcc00;
+            --accent: #dc3545;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #222222;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            padding: 20px;
+            border: 3px solid var(--secondary);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+        }
+
+        .header h1 {
+            font-size: 1.2rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .mode-btn {
+            background-color: #e9ecef;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        .badge-vendor { background-color: #d1e7dd; color: #0f5132; }
+        .badge-admin { background-color: #f8d7da; color: #842029; }
+
+        .stock-card {
+            background: linear-gradient(135deg, var(--primary), #003399);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,82,204,0.3);
+        }
+
+        .stock-card .count {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--secondary);
+            margin: 5px 0;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        .btn-sell {
+            background-color: #198754;
+            color: white;
+            box-shadow: 0 4px 12px rgba(25,135,84,0.3);
+        }
+
+        .btn-sell:disabled {
+            background-color: #6c757d;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            margin-top: 10px;
+        }
+
+        .code-display {
+            display: none;
+            background-color: #fff8e1;
+            border: 2px dashed var(--secondary);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .code-text {
+            font-size: 1.8rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: var(--primary);
+            margin: 10px 0;
+            word-break: break-all;
+        }
+
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .history {
+            margin-top: 25px;
+        }
+
+        .history h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .history-list {
+            list-style: none;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+
+        /* Panel Admin */
+        .admin-panel {
+            display: none;
+            background: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+        }
+
+        textarea, input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-top: 8px;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-box {
+            background: #f1f3f5;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-box .val {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- En-tête -->
+    <div class="header">
+        <h1>Super Modogo App</h1>
+        <button id="modeBtn" class="mode-btn badge-vendor" onclick="toggleMode()">Mode : Vendeur</button>
+    </div>
+
+    <!-- Espace Vendeur -->
+    <div id="vendorPanel">
+        <div class="stock-card">
+            <div>STOCK DISPONIBLE</div>
+            <div id="stockCount" class="count">0</div>
+            <div style="font-size: 0.85rem;">Activations en réserve</div>
+        </div>
+
+        <button id="sellBtn" class="btn btn-sell" onclick="sellCode()">
+            ENCAISSER & DÉBLOQUER
+        </button>
+
+        <!-- Affichage du Code Débloqué -->
+        <div id="codeDisplay" class="code-display">
+            <div style="font-size: 0.85rem; color: #666;">Code d'activation généré :</div>
+            <div id="activeCode" class="code-text">------</div>
+            <div id="qrcode"></div>
+            <div style="font-size: 0.8rem; color: #28a745; font-weight: bold;">
+                À scanner ou recopier sur l'app du client
+            </div>
+        </div>
+
+        <!-- Historique des ventes -->
+        <div class="history">
+            <h3>Dernières ventes de la journée :</h3>
+            <ul id="historyList" class="history-list"></ul>
+        </div>
+    </div>
+
+    <!-- Espace Administration (Sécurisé par PIN) -->
+    <div id="adminPanel" class="admin-panel">
+        <h2 style="font-size: 1.1rem; margin-bottom: 10px; color: var(--accent);">
+            🔒 Panneau Administration
+        </h2>
+
+        <div class="stat-grid">
+            <div class="stat-box">
+                <div style="font-size: 0.75rem;">TOTAL VENDUS</div>
+                <div id="statSold" class="val">0</div>
+            </div>
+            <div class="stat-box">
+                <div style="font-size: 0.75rem;">RECETTE THÉORIQUE</div>
+                <div id="statRevenue" class="val">0 FC</div>
+            </div>
+        </div>
+
+        <label style="font-weight: bold; font-size: 0.85rem;">Injecter des codes (1 code par ligne) :</label>
+        <textarea id="codesInput" rows="5" placeholder="Collez ici les codes générés...&#10;MODOGO-001&#10;MODOGO-002"></textarea>
+        
+        <button class="btn btn-primary" onclick="loadCodes()">Charger dans le stock</button>
+
+        <hr style="margin: 20px 0; border: none; border-top: 1fr solid #eee;">
+
+        <label style="font-weight: bold; font-size: 0.85rem;">Changer le Code PIN Admin :</label>
+        <input type="password" id="newPinInput" placeholder="Nouveau PIN (ex: 4 chiffres)">
+        <button class="btn btn-primary" style="background-color: #6c757d;" onclick="updatePin()">Modifier le PIN</button>
+        
+        <button class="btn" style="background-color: #dc3545; color: white; margin-top: 15px;" onclick="clearAllData()">
+            Réinitialiser tout le stock
+        </button>
+    </div>
+</div>
+
+<script>
+    // Prix fixe du pack[span_2](start_span)[span_2](end_span)
+    const PRICE_PER_CODE = 9999;
+
+    // Initialisation des données locales
+    let appData = JSON.parse(localStorage.getItem('modogo_data')) || {
+        availableCodes: [],
+        soldCodes: [],
+        adminPin: "1234" // Code PIN Admin par défaut
+    };
+
+    let currentMode = 'vendor';
+
+    function saveData() {
+        localStorage.setItem('modogo_data', JSON.stringify(appData));
+        updateUI();
+    }
+
+    function updateUI() {
+        // Mettre à jour le stock
+        document.getElementById('stockCount').innerText = appData.availableCodes.length;
+        
+        // Activer / Désactiver le bouton de vente
+        const sellBtn = document.getElementById('sellBtn');
+        if (appData.availableCodes.length === 0) {
+            sellBtn.disabled = true;
+            sellBtn.innerText = "STOCK ÉPUISÉ";
+        } else {
+            sellBtn.disabled = false;
+            sellBtn.innerText = "ENCAISSER & DÉBLOQUER";
+        }
+
+        // Mettre à jour les stats admin
+        const totalSold = appData.soldCodes.length;
+        document.getElementById('statSold').innerText = totalSold;
+        document.getElementById('statRevenue').innerText = (totalSold * PRICE_PER_CODE).toLocaleString('fr-FR') + " FC";
+
+        // Mettre à jour l'historique
+        const historyList = document.getElementById('historyList');
+        historyList.innerHTML = '';
+        appData.soldCodes.slice().reverse().forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'history-item';
+            li.innerHTML = `<span><b>${item.code}</b></span> <span>${item.time}</span>`;
+            historyList.appendChild(li);
+        });
+    }
+
+    // Basculer entre le mode Vendeur et Admin (sécurisé)
+    function toggleMode() {
+        if (currentMode === 'vendor') {
+            const enteredPin = prompt("🔒 Accès Administrateur. Entrez votre code PIN :");
+            if (enteredPin === appData.adminPin) {
+                currentMode = 'admin';
+                document.getElementById('vendorPanel').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                const btn = document.getElementById('modeBtn');
+                btn.innerText = "Mode : Admin";
+                btn.className = "mode-btn badge-admin";
+            } else if (enteredPin !== null) {
+                alert("❌ Code PIN incorrect ! Accès refusé.");
+            }
+        } else {
+            currentMode = 'vendor';
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('vendorPanel').style.display = 'block';
+            const btn = document.getElementById('modeBtn');
+            btn.innerText = "Mode : Vendeur";
+            btn.className = "mode-btn badge-vendor";
+        }
+    }
+
+    // Effectuer une vente sur le terrain
+    function sellCode() {
+        if (appData.availableCodes.length === 0) return;
+
+        // Extraire le premier code du stock
+        const code = appData.availableCodes.shift();
+        const timeString = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+        // Enregistrer la vente
+        appData.soldCodes.push({ code: code, time: timeString });
+        saveData();
+
+        // Afficher le code débloqué
+        document.getElementById('activeCode').innerText = code;
+        document.getElementById('codeDisplay').style.display = 'block';
+
+        // Générer le QR Code
+        const qrContainer = document.getElementById('qrcode');
+        qrContainer.innerHTML = '';
+        new QRCode(qrContainer, {
+            text: code,
+            width: 140,
+            height: 140
+        });
+    }
+
+    // Charger de nouveaux codes (Admin)
+    function loadCodes() {
+        const input = document.getElementById('codesInput').value.trim();
+        if (!input) return;
+
+        const newCodes = input.split('\n')
+                              .map(c => c.trim())
+                              .filter(c => c.length > 0);
+
+        appData.availableCodes = appData.availableCodes.concat(newCodes);
+        document.getElementById('codesInput').value = '';
+        saveData();
+        alert(`✅ ${newCodes.length} codes ont été ajoutés au stock !`);
+    }
+
+    // Modifier le code PIN Admin
+    function updatePin() {
+        const newPin = document.getElementById('newPinInput').value.trim();
+        if (newPin.length < 4) {
+            alert("Veuillez entrer un code PIN d'au moins 4 caractères.");
+            return;
+        }
+        appData.adminPin = newPin;
+        saveData();
+        document.getElementById('newPinInput').value = '';
+        alert("✅ Code PIN Administrateur mis à jour avec succès !");
+    }
+
+    // Réinitialiser complètement
+    function clearAllData() {
+        if (confirm("Êtes-vous sûr de vouloir effacer tout le stock et l'historique ?")) {
+            appData.availableCodes = [];
+            appData.soldCodes = [];
+            saveData();
+            document.getElementById('codeDisplay').style.display = 'none';
+            alert("Données réinitialisées.");
+        }
+    }
+
+    // Initialisation au chargement
+    updateUI();
+</script>
+</body>
+</html>
