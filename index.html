@@ -1,123 +1,53 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Modogo - Vendeur Terrain</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #0f172a; color: white; margin: 0; padding: 15px; display: flex; justify-content: center; }
-        .container { background: #1e293b; padding: 20px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-        h1 { text-align: center; color: #38bdf8; margin-bottom: 5px; font-size: 22px; }
-        .price-tag { text-align: center; font-size: 14px; color: #94a3b8; margin-bottom: 15px; }
-        .vendor-id-box { background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .stock-display { background: #0284c7; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
-        .stock-num { font-size: 32px; font-weight: bold; }
-        button.sell-btn { width: 100%; padding: 16px; background: #22c55e; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(34,197,94,0.3); }
-        button.sell-btn:active { transform: scale(0.98); }
-        .qr-area { display: none; background: white; color: black; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: center; }
-        #qrcode { display: flex; justify-content: center; margin: 15px 0; }
-        .code-revealed { font-size: 20px; font-weight: bold; color: #0284c7; letter-spacing: 1px; }
-        input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; margin-bottom: 10px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Super Modogo (9 999 FC)</h1>
-        <div class="price-tag">Interface Vendeur Terrain</div>
+let myStock = [];
+let vendorId = localStorage.getItem('vendorId') || '';
 
-        <div class="vendor-id-box">
-            <span style="font-size: 12px; color: #94a3b8;">Mon ID Vendeur :</span>
-            <input type="text" id="vendorIdInput" placeholder="Ex: VENDEUR-101" style="width: 140px; margin-bottom: 0; padding: 4px 8px; font-size: 12px;" onchange="connectVendor()">
-        </div>
+if (vendorId && !vendorId.startsWith('VENDEUR-')) {
+    vendorId = 'VENDEUR-' + vendorId;
+}
+if (vendorId) { 
+    listenStock(); 
+}
 
-        <div class="stock-display">
-            <div style="font-size: 12px; text-transform: uppercase;">Stock Disponible</div>
-            <div class="stock-num" id="stockCount">0</div>
-        </div>
+async function connectVendor() {
+    let i = document.querySelector('input');
+    if (!i) return;
+    let v = i.value.trim();
+    if (!v) return;
+    
+    vendorId = v.startsWith('VENDEUR-') ? v : 'VENDEUR-' + v;
+    
+    localStorage.setItem('vendorId', vendorId);
+    listenStock();
+}
 
-        <button class="sell-btn" onclick="sellCode()">⚡ ENCAISSER & DÉBLOQUER</button>
+function listenStock() {
+    if (!vendorId) return;
+    fetchStock();
+}
 
-        <div id="qrArea" class="qr-area">
-            <div style="font-weight: bold; color: #16a34a;">✅ CLIENT DÉBLOQUÉ</div>
-            <div id="qrcode"></div>
-            <div class="code-revealed" id="codeText">MODOGO-XXXX</div>
-            <small style="color: #64748b;">Présentez ce QR Code au client</small>
-        </div>
-    </div>
-
-    <script>
-        const SUPABASE_URL = "https://kmlqtwbrgsdjmciwldpv.supabase.co";
-        const SUPABASE_KEY = "Sb_secret_c6lYQjYx90_JaJQ-WOYhhA_aZc861jK";
-        const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        let myStock = [];
-        let vendorId = localStorage.getItem('modogo_vendor_id') || '';
-
-        if(vendorId) {
-            document.getElementById('vendorIdInput').value = vendorId;
-            listenStock();
-        }
-
-        async function connectVendor() {
-            vendorId = document.getElementById('vendorIdInput').value.trim();
-            if(!vendorId) return;
-            localStorage.setItem('modogo_vendor_id', vendorId);
-            listenStock();
-        }
-
-        function listenStock() {
-            if(!vendorId) return;
+async function fetchStock() {
+    try {
+        const { data, error } = await db
+            .from('codes')
+            .select('*', { count: 'exact' })
+            .eq('seller_id', vendorId)
+            .eq('status', 'available');
             
-            // Récupération initiale
-            fetchStock();
-
-            // Écoute en temps réel des recharges depuis Binza Pigeon
-            db.channel('public:modogo_stock')
-              .on('postgres_changes', { event: '*', schema: 'public', table: 'modogo_stock', filter: `id=eq.${vendorId}` }, payload => {
-                  if(payload.new && payload.new.data) {
-                      myStock = payload.new.data.stock || [];
-                      updateUI();
-                  }
-              })
-              .subscribe();
+        if (error) {
+            console.error(error);
+            return;
         }
+        
+        myStock = data || [];
+        updateUI();
+    } catch (err) {
+        console.error(err);
+    }
+}
 
-        async function fetchStock() {
-            const { data } = await db.from('modogo_stock').select('data').eq('id', vendorId).single();
-            if(data && data.data) {
-                myStock = data.data.stock || [];
-                updateUI();
-            }
-        }
-
-        function updateUI() {
-            document.getElementById('stockCount').innerText = myStock.length;
-        }
-
-        async function sellCode() {
-            if(myStock.length === 0) {
-                return alert("⚠️ Votre stock est vide ! Contactez l'administrateur à Binza Pigeon pour recharger.");
-            }
-
-            const codeToSell = myStock.shift(); // Prendre le premier code
-            updateUI();
-
-            // Mettre à jour la base cloud
-            await db.from('modogo_stock').upsert({ id: vendorId, data: { stock: myStock }, updated_at: new Date() });
-
-            // Afficher le QR code
-            document.getElementById('qrArea').style.display = 'block';
-            document.getElementById('codeText').innerText = codeToSell;
-            document.getElementById('qrcode').innerHTML = '';
-            new QRCode(document.getElementById("qrcode"), {
-                text: codeToSell,
-                width: 128,
-                height: 128
-            });
-        }
-    </script>
-</body>
-</html>
+function updateUI() {
+    let stockElem = document.querySelector('.stock-num') || document.getElementById('stockNum');
+    if (stockElem) {
+        stockElem.textContent = myStock.length;
+    }
+}
