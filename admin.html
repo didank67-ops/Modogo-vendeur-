@@ -3,259 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Modogo - Dashboard Admin Central</title>
+    <title>Super Modogo - Admin Central</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --primary: #0052cc;
-            --secondary: #ffcc00;
-            --accent: #dc3545;
-            --bg: #f4f7f6;
-            --card-bg: #ffffff;
-            --text: #222222;
-            --success: #198754;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            padding: 15px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-            padding: 20px;
-            border: 3px solid var(--primary);
-        }
-
-        .header {
-            text-align: center;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 12px;
-            margin-bottom: 15px;
-        }
-
-        .header h1 {
-            font-size: 1.3rem;
-            color: var(--primary);
-            font-weight: bold;
-        }
-
-        /* Navigation Onglets */
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            background: #e9ecef;
-            border-radius: 10px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            cursor: pointer;
-            color: #555;
-            transition: all 0.2s;
-        }
-
-        .tab-btn.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 10px rgba(0,82,204,0.3);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Cartes de synthèse */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: #f8f9fa;
-            padding: 12px;
-            border-radius: 10px;
-            text-align: center;
-            border: 1px solid #e0e0e0;
-        }
-
-        .stat-card .num {
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: var(--primary);
-        }
-
-        .stat-card .label {
-            font-size: 0.7rem;
-            color: #666;
-            margin-top: 4px;
-        }
-
-        /* Forms & Inputs */
-        label {
-            font-weight: bold;
-            font-size: 0.85rem;
-            display: block;
-            margin-top: 10px;
-            margin-bottom: 5px;
-        }
-
-        textarea, input, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 0.9rem;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-success { background: var(--success); color: white; }
-        .btn-danger { background: var(--accent); color: white; }
-
-        /* Tables & Lists */
-        .table-container {
-            overflow-x: auto;
-            margin-top: 15px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-
-        th {
-            background: #f1f3f5;
-            color: #333;
-        }
-
-        .badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            display: inline-block;
-        }
-
-        .badge-available { background: #d1e7dd; color: #0f5132; }
-        .badge-assigned { background: #fff3cd; color: #664d03; }
-        .badge-sold { background: #f8d7da; color: #842029; }
-
-        .vendor-card {
-            background: white;
-            border: 1fr solid #ddd;
-            border-left: 5px solid var(--primary);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .vendor-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .vendor-name {
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: var(--primary);
-        }
-
-        .assign-box {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .assign-box input {
-            width: 80px;
-        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        h1 { text-align: center; color: #1a56db; margin-bottom: 5px; font-size: 22px; }
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: #e5e7eb; border-radius: 8px; font-weight: bold; cursor: pointer; color: #374151; }
+        .tab-btn.active { background: #1a56db; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; text-align: center; }
+        .stat-value { font-size: 20px; font-weight: bold; color: #0f172a; }
+        .stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; margin-top: 4px; }
+        textarea, input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 10px; font-size: 14px; }
+        button.action-btn { width: 100%; padding: 12px; background: #1a56db; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        button.action-btn:hover { background: #1e40af; }
+        .vendor-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
+        .vendor-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; }
+        .vendor-row { display: flex; gap: 10px; align-items: center; }
+        .vendor-row input { margin-bottom: 0; }
+        .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+        .badge-available { background: #dcfce7; color: #166534; }
+        .badge-assigned { background: #fef3c7; color: #92400e; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th, td { padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        th { background: #f1f5f9; }
+        .cloud-status { text-align: center; font-size: 11px; margin-top: 15px; color: #16a34a; font-weight: bold; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <div class="header">
+    <div class="container">
         <h1>Super Modogo - Admin Central</h1>
-    </div>
+        <div class="cloud-status" id="cloudStatus">⚡ Connexion Cloud Supabase active</div>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 15px 0;">
 
-    <!-- Navigation par Onglets -->
-    <div class="tabs">
-        <button id="tabBtn1" class="tab-btn active" onclick="switchTab('gallery')">🗄️ Galerie à Codes</button>
-        <button id="tabBtn2" class="tab-btn" onclick="switchTab('vendors')">👥 Table des Vendeurs</button>
-    </div>
-
-    <!-- ONGLET 1 : GALERIE À CODES -->
-    <div id="tabGallery" class="tab-content active">
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div id="statTotal" class="num">0</div>
-                <div class="label">TOTAL CODES</div>
-            </div>
-            <div class="stat-card">
-                <div id="statAvail" class="num" style="color: var(--success);">0</div>
-                <div class="label">DISPONIBLES</div>
-            </div>
-            <div class="stat-card">
-                <div id="statAssigned" class="num" style="color: #e6a100;">0</div>
-                <div class="label">ASSIGNÉS</div>
-            </div>
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('gallery')">🗄️ Galerie à Codes</button>
+            <button class="tab-btn" onclick="switchTab('vendors')">👥 Table des Vendeurs</button>
         </div>
 
-        <label>Injecter un nouveau lot de codes :</label>
-        <textarea id="importCodesInput" rows="4" placeholder="Collez ici les codes générés (1 par ligne)...&#10;MODOGO-8901&#10;MODOGO-8902"></textarea>
-        <button class="btn btn-primary" onclick="importCodes()">Ajouter à la Galerie</button>
+        <!-- ONGLET GALERIE -->
+        <div id="tab-gallery" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalCodes">0</div>
+                    <div class="stat-label">Total Codes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="availCodes" style="color: #16a34a;">0</div>
+                    <div class="stat-label">Disponibles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="assignedCodes" style="color: #d97706;">0</div>
+                    <div class="stat-label">Assignés</div>
+                </div>
+            </div>
 
-        <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
+            <label><b>Injecter un nouveau lot de codes :</b></label>
+            <textarea id="codeImport" rows="3" placeholder="MODOGO-1001&#10;MODOGO-1002"></textarea>
+            <button class="action-btn" onclick="addCodes()">Ajouter à la Galerie</button>
 
-        <label>Rechercher un code dans la Galerie :</label>
-        <input type="text" id="searchCodeInput" placeholder="Tapez un code..." onkeyup="filterCodes()">
-
-        <div class="table-container">
+            <h4 style="margin-top: 20px; margin-bottom: 5px;">Rechercher un code :</h4>
+            <input type="text" id="searchInput" oninput="renderGallery()" placeholder="Tapez un code...">
+            
             <table>
                 <thead>
                     <tr>
@@ -264,217 +78,151 @@
                         <th>Assigné à</th>
                     </tr>
                 </thead>
-                <tbody id="codesTableBody">
-                    <!-- Rempli dynamiquement -->
-                </tbody>
+                <tbody id="galleryBody"></tbody>
             </table>
         </div>
-    </div>
 
-    <!-- ONGLET 2 : TABLE DES VENDEURS -->
-    <div id="tabVendors" class="tab-content">
-        <div style="background: #eef4ff; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-            <label style="margin-top: 0;">Ajouter un nouveau vendeur sur le terrain :</label>
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="newVendorName" placeholder="Nom du vendeur (ex: Jean)">
-                <button class="btn btn-success" style="margin-top:0; width: 120px;" onclick="addVendor()">Ajouter</button>
+        <!-- ONGLET VENDEURS -->
+        <div id="tab-vendors" class="tab-content">
+            <label><b>Ajouter un nouveau vendeur :</b></label>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="newVendorName" placeholder="Nom du vendeur (ex: Jean Gare Central)" style="margin-bottom:0;">
+                <button class="action-btn" onclick="addVendor()" style="width: 80px;">Ajouter</button>
             </div>
-        </div>
 
-        <div id="vendorsList">
-            <!-- Cartes des vendeurs remplies dynamiquement -->
+            <h4 style="margin-top: 20px; margin-bottom: 10px;">Gestion & Recharge à Distance :</h4>
+            <div id="vendorsList"></div>
         </div>
     </div>
-</div>
 
-<script>
-    const PRICE_PER_CODE = 9999;
+    <script>
+        const SUPABASE_URL = "https://kmlqtwbrgsdjmciwldpv.supabase.co";
+        const SUPABASE_KEY = "Sb_secret_c6lYQjYx90_JaJQ-WOYhhA_aZc861jK";
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Structure des données de l'Admin Central
-    let adminData = JSON.parse(localStorage.getItem('modogo_admin_data')) || {
-        codesGallery: [], // { code: "...", status: "AVAILABLE" | "ASSIGNED" | "SOLD", assignedTo: null }
-        vendors: []       // { id: 1, name: "Jean", assignedCount: 0, soldCount: 0 }
-    };
+        let appData = {
+            codes: [], // { code, assignedTo: null | vendorId }
+            vendors: [] // { id, name, stock: [] }
+        };
 
-    function saveData() {
-        localStorage.setItem('modogo_admin_data', JSON.stringify(adminData));
-        renderUI();
-    }
-
-    function switchTab(tabName) {
-        document.getElementById('tabGallery').classList.remove('active');
-        document.getElementById('tabVendors').classList.remove('active');
-        document.getElementById('tabBtn1').classList.remove('active');
-        document.getElementById('tabBtn2').classList.remove('active');
-
-        if (tabName === 'gallery') {
-            document.getElementById('tabGallery').classList.add('active');
-            document.getElementById('tabBtn1').classList.add('active');
-        } else {
-            document.getElementById('tabVendors').classList.add('active');
-            document.getElementById('tabBtn2').classList.add('active');
-        }
-    }
-
-    // --- LOGIQUE GALERIE À CODES ---
-
-    function importCodes() {
-        const input = document.getElementById('importCodesInput').value.trim();
-        if (!input) return;
-
-        const newCodes = input.split('\n').map(c => c.trim()).filter(c => c.length > 0);
-        let addedCount = 0;
-
-        newCodes.forEach(codeStr => {
-            // Vérifier les doublons
-            if (!adminData.codesGallery.some(item => item.code === codeStr)) {
-                adminData.codesGallery.push({
-                    code: codeStr,
-                    status: 'AVAILABLE',
-                    assignedTo: null
-                });
-                addedCount++;
+        async function init() {
+            const { data, error } = await db.from('modogo_stock').select('data').eq('id', 'central_data').single();
+            if (data && data.data) {
+                appData = data.data;
             }
-        });
+            renderAll();
+        }
 
-        document.getElementById('importCodesInput').value = '';
-        saveData();
-        alert(`✅ ${addedCount} nouveaux codes ont été ajoutés à la Galerie !`);
-    }
+        async function saveData() {
+            await db.from('modogo_stock').upsert({ id: 'central_data', data: appData, updated_at: new Date() });
+            renderAll();
+        }
 
-    function filterCodes() {
-        const query = document.getElementById('searchCodeInput').value.toLowerCase();
-        renderCodesTable(query);
-    }
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            if(tab === 'gallery') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-gallery').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-vendors').classList.add('active');
+            }
+        }
 
-    function renderCodesTable(filter = '') {
-        const tbody = document.getElementById('codesTableBody');
-        tbody.innerHTML = '';
+        function addCodes() {
+            const raw = document.getElementById('codeImport').value.trim();
+            if (!raw) return;
+            const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            let added = 0;
+            lines.forEach(c => {
+                if (!appData.codes.some(item => item.code === c)) {
+                    appData.codes.push({ code: c, assignedTo: null });
+                    added++;
+                }
+            });
+            document.getElementById('codeImport').value = '';
+            saveData();
+            alert(`${added} code(s) ajouté(s) avec succès !`);
+        }
 
-        const filtered = adminData.codesGallery.filter(item => item.code.toLowerCase().includes(filter));
+        function addVendor() {
+            const name = document.getElementById('newVendorName').value.trim();
+            if (!name) return;
+            const newId = 'VENDEUR-' + Math.floor(100 + Math.random() * 900);
+            appData.vendors.push({ id: newId, name: name, stock: [] });
+            document.getElementById('newVendorName').value = '';
+            saveData();
+        }
 
-        filtered.slice(0, 50).forEach(item => { // Affiche les 50 premiers
-            const tr = document.createElement('tr');
-            
-            let badgeClass = 'badge-available';
-            let labelStatus = 'DISPONIBLE';
+        async function assignStock(vendorId) {
+            const qtyInput = document.getElementById(`qty-${vendorId}`);
+            const qty = parseInt(qtyInput.value);
+            if (!qty || qty <= 0) return alert("Veuillez entrer une quantité valide.");
 
-            if (item.status === 'ASSIGNED') {
-                badgeClass = 'badge-assigned';
-                labelStatus = 'ASSIGNÉ';
-            } else if (item.status === 'SOLD') {
-                badgeClass = 'badge-sold';
-                labelStatus = 'VENDU';
+            const available = appData.codes.filter(c => c.assignedTo === null);
+            if (available.length < qty) {
+                return alert(`Stock insuffisant dans la Galerie ! (${available.length} disponible(s))`);
             }
 
-            tr.innerHTML = `
-                <td><b>${item.code}</b></td>
-                <td><span class="badge ${badgeClass}">${labelStatus}</span></td>
-                <td>${item.assignedTo ? item.assignedTo : '-'}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
+            const vendor = appData.vendors.find(v => v.id === vendorId);
+            const toAssign = available.slice(0, qty);
 
-    // --- LOGIQUE TABLE DES VENDEURS ---
+            toAssign.forEach(c => {
+                c.assignedTo = vendorId;
+                vendor.stock.push(c.code);
+            });
 
-    function addVendor() {
-        const name = document.getElementById('newVendorName').value.trim();
-        if (!name) return;
-
-        adminData.vendors.push({
-            id: Date.now(),
-            name: name,
-            assignedCount: 0,
-            soldCount: 0
-        });
-
-        document.getElementById('newVendorName').value = '';
-        saveData();
-    }
-
-    function assignStockToVendor(vendorId) {
-        const inputEl = document.getElementById(`assign_input_${vendorId}`);
-        const qty = parseInt(inputEl.value);
-
-        if (isNaN(qty) || qty <= 0) {
-            alert("Veuillez entrer une quantité valide.");
-            return;
-        }
-
-        // Trouver les codes disponibles
-        const availableCodes = adminData.codesGallery.filter(item => item.status === 'AVAILABLE');
-
-        if (availableCodes.length < qty) {
-            alert(` Stock insuffisant dans la Galerie ! Vous n'avez que ${availableCodes.length} codes disponibles.`);
-            return;
-        }
-
-        const vendor = adminData.vendors.find(v => v.id === vendorId);
-
-        // Assigner les codes
-        for (let i = 0; i < qty; i++) {
-            availableCodes[i].status = 'ASSIGNED';
-            availableCodes[i].assignedTo = vendor.name;
-        }
-
-        vendor.assignedCount += qty;
-        saveData();
-        alert(`✅ ${qty} codes ont été attribués à ${vendor.name} !`);
-    }
-
-    function renderVendors() {
-        const container = document.getElementById('vendorsList');
-        container.innerHTML = '';
-
-        if (adminData.vendors.length === 0) {
-            container.innerHTML = `<p style="text-align:center; color:#888;">Aucun vendeur enregistré pour le moment.</p>`;
-            return;
-        }
-
-        adminData.vendors.forEach(vendor => {
-            const revenueFC = (vendor.soldCount * PRICE_PER_CODE).toLocaleString('fr-FR');
+            // Sauvegarder central + pousser directement dans le canal du vendeur
+            await saveData();
+            await db.from('modogo_stock').upsert({ id: vendorId, data: { stock: vendor.stock }, updated_at: new Date() });
             
-            const card = document.createElement('div');
-            card.className = 'vendor-card';
-            card.innerHTML = `
-                <div class="vendor-header">
-                    <span class="vendor-name">${vendor.name}</span>
-                    <span style="font-size:0.8rem; color:#666;">ID: ${vendor.id.toString().slice(-4)}</span>
-                </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:0.85rem; margin-bottom:10px;">
-                    <div>Stock en main : <b>${vendor.assignedCount - vendor.soldCount}</b></div>
-                    <div>Total attribué : <b>${vendor.assignedCount}</b></div>
-                    <div>Ventes effectuées : <b style="color:var(--success);">${vendor.soldCount}</b></div>
-                    <div>À encaisser : <b style="color:var(--primary);">${revenueFC} FC</b></div>
-                </div>
-                <div class="assign-box">
-                    <input type="number" id="assign_input_${vendor.id}" placeholder="Qté" min="1">
-                    <button class="btn btn-primary" style="margin:0;" onclick="assignStockToVendor(${vendor.id})">
-                        Assigner des codes
-                    </button>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    }
+            alert(`✅ ${qty} code(s) envoyés à distance à ${vendor.name} !`);
+        }
 
-    function renderUI() {
-        // Stats
-        const total = adminData.codesGallery.length;
-        const available = adminData.codesGallery.filter(i => i.status === 'AVAILABLE').length;
-        const assigned = adminData.codesGallery.filter(i => i.status === 'ASSIGNED').length;
+        function renderGallery() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = appData.codes.filter(c => c.code.toLowerCase().includes(search));
+            
+            let html = '';
+            filtered.forEach(c => {
+                const status = c.assignedTo ? `<span class="badge badge-assigned">Assigné</span>` : `<span class="badge badge-available">Disponible</span>`;
+                const vendorName = c.assignedTo ? (appData.vendors.find(v => v.id === c.assignedTo)?.name || c.assignedTo) : '-';
+                html += `<tr><td><b>${c.code}</b></td><td>${status}</td><td>${vendorName}</td></tr>`;
+            });
+            document.getElementById('galleryBody').innerHTML = html;
 
-        document.getElementById('statTotal').innerText = total;
-        document.getElementById('statAvail').innerText = available;
-        document.getElementById('statAssigned').innerText = assigned;
+            document.getElementById('totalCodes').innerText = appData.codes.length;
+            document.getElementById('availCodes').innerText = appData.codes.filter(c => !c.assignedTo).length;
+            document.getElementById('assignedCodes').innerText = appData.codes.filter(c => c.assignedTo).length;
+        }
 
-        renderCodesTable();
-        renderVendors();
-    }
+        function renderVendors() {
+            let html = '';
+            appData.vendors.forEach(v => {
+                html += `
+                    <div class="vendor-card">
+                        <div class="vendor-header">
+                            <span>👤 ${v.name}</span>
+                            <small style="color:#64748b;">ID: ${v.id}</small>
+                        </div>
+                        <div style="font-size: 13px; margin-bottom: 8px;">Stock en main : <b>${v.stock.length} code(s)</b></div>
+                        <div class="vendor-row">
+                            <input type="number" id="qty-${v.id}" placeholder="Qté" style="width: 80px;" min="1">
+                            <button class="action-btn" onclick="assignStock('${v.id}')">⚡ Recharger à distance</button>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('vendorsList').innerHTML = html || '<p style="color:#64748b; text-align:center;">Aucun vendeur enregistré.</p>';
+        }
 
-    // Initialisation
-    renderUI();
-</script>
+        function renderAll() {
+            renderGallery();
+            renderVendors();
+        }
+
+        init();
+    </script>
 </body>
 </html>
