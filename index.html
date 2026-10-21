@@ -4,6 +4,7 @@ let vendorId = localStorage.getItem('vendorId') || '';
 if (vendorId && !vendorId.startsWith('VENDEUR-')) {
     vendorId = 'VENDEUR-' + vendorId;
 }
+
 if (vendorId) { 
     listenStock(); 
 }
